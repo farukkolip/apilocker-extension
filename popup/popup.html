@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Locker</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+
+  <!-- ── SETUP SCREEN ────────────────────────────────────────────── -->
+  <div id="screen-setup" class="screen hidden">
+    <div class="brand">
+      <div class="brand-icon">🔐</div>
+      <h1>API Locker</h1>
+      <p class="brand-sub">Secure API key manager</p>
+    </div>
+    <div class="card">
+      <h2>Create Master Password</h2>
+      <p class="hint">This password encrypts all your keys locally. It is never sent anywhere.</p>
+      <div class="field">
+        <label>Master Password</label>
+        <div class="input-wrap">
+          <input type="password" id="setup-password" placeholder="Min. 8 characters" autocomplete="new-password">
+          <button class="eye-btn" data-target="setup-password">👁</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Confirm Password</label>
+        <div class="input-wrap">
+          <input type="password" id="setup-confirm" placeholder="Repeat password" autocomplete="new-password">
+          <button class="eye-btn" data-target="setup-confirm">👁</button>
+        </div>
+      </div>
+      <div id="setup-error" class="error hidden"></div>
+      <button id="setup-btn" class="btn-primary">Create Vault</button>
+    </div>
+  </div>
+
+  <!-- ── LOCK SCREEN ─────────────────────────────────────────────── -->
+  <div id="screen-lock" class="screen hidden">
+    <div class="brand">
+      <div class="brand-icon">🔐</div>
+      <h1>API Locker</h1>
+      <p class="brand-sub">Enter password to unlock</p>
+    </div>
+    <div class="card">
+      <div class="field">
+        <label>Master Password</label>
+        <div class="input-wrap">
+          <input type="password" id="lock-password" placeholder="Your master password" autocomplete="current-password">
+          <button class="eye-btn" data-target="lock-password">👁</button>
+        </div>
+      </div>
+      <div id="lock-error" class="error hidden"></div>
+      <button id="unlock-btn" class="btn-primary">Unlock</button>
+    </div>
+  </div>
+
+  <!-- ── MAIN SCREEN ─────────────────────────────────────────────── -->
+  <div id="screen-main" class="screen hidden">
+    <div class="topbar">
+      <div class="topbar-left">
+        <span class="topbar-logo">🔐</span>
+        <span class="topbar-title">API Locker</span>
+      </div>
+      <div class="topbar-actions">
+        <button id="add-btn" class="icon-btn" title="Add key">＋</button>
+        <button id="export-btn" class="icon-btn" title="Export backup">⬇</button>
+        <button id="import-btn" class="icon-btn" title="Import backup">⬆</button>
+        <button id="lock-btn" class="icon-btn" title="Lock vault">🔒</button>
+      </div>
+      <input type="file" id="import-file" accept=".json" style="display:none">
+    </div>
+
+    <div class="search-wrap">
+      <input type="text" id="search-input" placeholder="Search keys..." class="search-input">
+    </div>
+
+    <!-- Site match banner -->
+    <div id="site-banner" class="site-banner hidden">
+      <img id="site-banner-logo" class="site-logo-sm" src="" alt="">
+      <span id="site-banner-text"></span>
+    </div>
+
+    <div id="keys-list" class="keys-list">
+      <!-- populated by JS -->
+    </div>
+
+    <div id="empty-state" class="empty-state hidden">
+      <div class="empty-icon">🗝️</div>
+      <p>No API keys saved yet.</p>
+      <p class="hint">Click <strong>＋</strong> to add your first key.</p>
+    </div>
+  </div>
+
+  <!-- ── ADD / EDIT SCREEN ───────────────────────────────────────── -->
+  <div id="screen-add" class="screen hidden">
+    <div class="topbar">
+      <button id="back-btn" class="icon-btn">←</button>
+      <span class="topbar-title" id="form-title">Add API Key</span>
+      <div style="width:32px"></div>
+    </div>
+
+    <div class="form-body">
+      <div class="field">
+        <label>Provider</label>
+        <div id="provider-grid" class="provider-grid">
+          <!-- populated by JS -->
+        </div>
+        <input type="text" id="provider-custom" placeholder="Custom provider name (if not listed)" class="mt8">
+      </div>
+
+      <div class="field">
+        <label>Label <span class="hint-inline">(e.g. Production, Personal)</span></label>
+        <input type="text" id="key-label" placeholder="Production">
+      </div>
+
+      <div class="field">
+        <label>API Key</label>
+        <div class="input-wrap">
+          <input type="password" id="key-value" placeholder="Paste your API key here" autocomplete="off">
+          <button class="eye-btn" data-target="key-value">👁</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Expiry Date <span class="hint-inline">(optional — get warned before it expires)</span></label>
+        <input type="date" id="key-expiry">
+      </div>
+
+      <div class="field">
+        <label>Notes <span class="hint-inline">(optional)</span></label>
+        <textarea id="key-notes" placeholder="e.g. Billing limit: $50/mo"></textarea>
+      </div>
+
+      <div id="add-error" class="error hidden"></div>
+      <button id="save-btn" class="btn-primary">Save Key</button>
+      <button id="delete-btn" class="btn-danger hidden">Delete Key</button>
+    </div>
+  </div>
+
+  <script src="../utils/providers.js"></script>
+  <script src="../utils/crypto.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
