@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "API Locker",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Secure API key manager with smart site detection. AES-256 encrypted, 100% local \u2014 your keys never leave your device.",
   "permissions": [
     "storage",
@@ -9,7 +9,8 @@
     "tabs"
   ],
   "host_permissions": [
-    "<all_urls>"
+    "<all_urls>",
+    "https://*.supabase.co/*"
   ],
   "action": {
     "default_popup": "popup/popup.html",
@@ -59,6 +60,5 @@
         "<all_urls>"
       ]
     }
-  ],
-  "default_title": ""
+  ]
 }

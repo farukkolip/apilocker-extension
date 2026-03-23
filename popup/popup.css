@@ -450,3 +450,141 @@ input[type="date"] {
   color-scheme: dark;
 }
 input[type="date"]:focus { border-color: #6366f1; }
+
+/* ── Sync Bar ─────────────────────────────────────────────────────────────── */
+.sync-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: #111;
+  border-bottom: 1px solid #1e1e1e;
+  font-size: 11px;
+  color: #555;
+  flex-wrap: wrap;
+}
+.sync-bar-text { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sync-action-btn {
+  background: #1c1c1c;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  color: #aaa;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 3px 8px;
+  transition: background 0.15s, color 0.15s;
+}
+.sync-action-btn:hover { background: #252525; color: #e8eaed; }
+.sync-action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.sync-logout { color: #ef4444; border-color: #ef444430; }
+.sync-logout:hover { background: #ef444415; color: #ef4444; }
+
+/* ── Sync button highlight ────────────────────────────────────────────────── */
+.btn-highlight { animation: highlight-pulse 0.5s ease 2; }
+@keyframes highlight-pulse {
+  0%, 100% { color: #e8eaed; }
+  50%       { color: #6366f1; }
+}
+
+/* ── Auth Screen ──────────────────────────────────────────────────────────── */
+.sync-hero { text-align: center; padding: 4px 0 12px; }
+.sync-hero-icon { font-size: 32px; margin-bottom: 6px; }
+.sync-hero-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+
+#screen-auth .form-body { padding: 12px 20px 20px; gap: 12px; }
+
+.auth-tabs {
+  display: flex;
+  gap: 0;
+  border: 1px solid #252525;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 2px;
+}
+.auth-tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px;
+  transition: background 0.15s, color 0.15s;
+}
+.auth-tab.active {
+  background: #1c1c1c;
+  color: #e8eaed;
+}
+.auth-note { text-align: center; color: #444; font-size: 11px; margin-top: 2px; line-height: 1.5; }
+
+#screen-auth input[type="email"],
+#screen-auth input[type="password"] {
+  padding: 11px 14px;
+  font-size: 14px;
+  border-radius: 9px;
+}
+
+#screen-auth .input-wrap input {
+  padding-right: 42px;
+}
+
+/* ── Welcome Screen ───────────────────────────────────────────────────────── */
+.welcome-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 8px 24px 32px;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: #a5b4fc;
+  border: 1px solid #6366f150;
+  border-radius: 8px;
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  width: 100%;
+}
+.btn-secondary:hover { background: #6366f115; border-color: #6366f180; }
+
+.btn-ghost {
+  background: transparent;
+  color: #555;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s;
+  width: 100%;
+}
+.btn-ghost:hover { color: #888; }
+
+.welcome-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #2a2a2a;
+  font-size: 11px;
+  margin: 2px 0;
+}
+.welcome-divider::before,
+.welcome-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #1e1e1e;
+}
+.welcome-divider span { color: #333; white-space: nowrap; }
+
+.welcome-free-note {
+  text-align: center;
+  font-size: 11px;
+  color: #333;
+  margin-top: 2px;
+}

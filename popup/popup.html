@@ -8,16 +8,32 @@
 </head>
 <body>
 
-  <!-- ── SETUP SCREEN ────────────────────────────────────────────── -->
-  <div id="screen-setup" class="screen hidden">
+  <!-- ── WELCOME SCREEN ──────────────────────────────────────────────── -->
+  <div id="screen-welcome" class="screen hidden">
     <div class="brand">
       <div class="brand-icon">🔐</div>
       <h1>API Locker</h1>
       <p class="brand-sub">Secure API key manager</p>
     </div>
-    <div class="card">
-      <h2>Create Master Password</h2>
-      <p class="hint">This password encrypts all your keys locally. It is never sent anywhere.</p>
+    <div class="welcome-actions">
+      <button id="welcome-signup-btn" class="btn-primary">Create Account</button>
+      <button id="welcome-signin-btn" class="btn-secondary">Sign In</button>
+      <div class="welcome-divider"><span>or</span></div>
+      <button id="welcome-local-btn" class="btn-ghost">Continue without account</button>
+      <p class="welcome-free-note">Free · Up to 5 keys · No cloud sync</p>
+    </div>
+  </div>
+
+  <!-- ── SETUP SCREEN ────────────────────────────────────────────────── -->
+  <div id="screen-setup" class="screen hidden">
+    <div class="topbar">
+      <button id="setup-back-btn" class="icon-btn">←</button>
+      <span class="topbar-title" id="setup-topbar-title">Master Password</span>
+      <div style="width:32px"></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h2 id="setup-title">Create Master Password</h2>
+      <p id="setup-hint" class="hint">This password encrypts all your keys locally. It is never sent anywhere.</p>
       <div class="field">
         <label>Master Password</label>
         <div class="input-wrap">
@@ -25,7 +41,7 @@
           <button class="eye-btn" data-target="setup-password">👁</button>
         </div>
       </div>
-      <div class="field">
+      <div class="field" id="setup-confirm-field">
         <label>Confirm Password</label>
         <div class="input-wrap">
           <input type="password" id="setup-confirm" placeholder="Repeat password" autocomplete="new-password">
@@ -37,12 +53,12 @@
     </div>
   </div>
 
-  <!-- ── LOCK SCREEN ─────────────────────────────────────────────── -->
+  <!-- ── LOCK SCREEN ─────────────────────────────────────────────────── -->
   <div id="screen-lock" class="screen hidden">
     <div class="brand">
       <div class="brand-icon">🔐</div>
       <h1>API Locker</h1>
-      <p class="brand-sub">Enter password to unlock</p>
+      <p class="brand-sub" id="lock-subtitle">Enter password to unlock</p>
     </div>
     <div class="card">
       <div class="field">
@@ -57,7 +73,7 @@
     </div>
   </div>
 
-  <!-- ── MAIN SCREEN ─────────────────────────────────────────────── -->
+  <!-- ── MAIN SCREEN ─────────────────────────────────────────────────── -->
   <div id="screen-main" class="screen hidden">
     <div class="topbar">
       <div class="topbar-left">
@@ -66,11 +82,18 @@
       </div>
       <div class="topbar-actions">
         <button id="add-btn" class="icon-btn" title="Add key">＋</button>
+        <button id="sync-btn" class="icon-btn" title="Cloud sync">☁</button>
         <button id="export-btn" class="icon-btn" title="Export backup">⬇</button>
         <button id="import-btn" class="icon-btn" title="Import backup">⬆</button>
         <button id="lock-btn" class="icon-btn" title="Lock vault">🔒</button>
       </div>
       <input type="file" id="import-file" accept=".json" style="display:none">
+    </div>
+
+    <!-- Sync status bar -->
+    <div id="sync-bar" class="sync-bar hidden">
+      <span id="sync-bar-text"></span>
+      <button id="sync-logout-btn" class="sync-action-btn sync-logout" title="Sign out">Sign out</button>
     </div>
 
     <div class="search-wrap">
@@ -140,8 +163,46 @@
     </div>
   </div>
 
+  <!-- ── AUTH SCREEN ──────────────────────────────────────────────── -->
+  <div id="screen-auth" class="screen hidden">
+    <div class="topbar">
+      <button id="auth-back-btn" class="icon-btn">←</button>
+      <span class="topbar-title">Account</span>
+      <div style="width:32px"></div>
+    </div>
+    <div class="form-body">
+      <div class="sync-hero">
+        <div class="sync-hero-icon">☁</div>
+        <p class="sync-hero-title">Sync across devices</p>
+        <p class="hint">Your vault stays encrypted. The server never sees your keys.</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button id="tab-login" class="auth-tab active">Sign In</button>
+        <button id="tab-signup" class="auth-tab">Sign Up</button>
+      </div>
+
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="auth-email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="input-wrap">
+          <input type="password" id="auth-password" placeholder="Min. 8 characters" autocomplete="current-password">
+          <button class="eye-btn" data-target="auth-password">👁</button>
+        </div>
+      </div>
+
+      <div id="auth-error" class="error hidden"></div>
+      <button id="auth-submit-btn" class="btn-primary">Sign In</button>
+      <p class="hint auth-note">Pro plan required for cloud sync. <br>Free tier: up to 5 keys.</p>
+    </div>
+  </div>
+
   <script src="../utils/providers.js"></script>
   <script src="../utils/crypto.js"></script>
+  <script src="../utils/supabase.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

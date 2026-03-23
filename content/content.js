@@ -71,12 +71,19 @@
     return v.slice(0, 6) + '••••••••' + v.slice(-4);
   }
 
+  // ── Guard: if extension context is invalidated, bail out silently ──────────
+  function isContextValid() {
+    try { return !!chrome.runtime?.id; } catch { return false; }
+  }
+
   // ── Inject badge ──────────────────────────────────────────────────────────
 
-  chrome.storage.local.get('apivault_encrypted', ({ apivault_encrypted }) => {
-    if (!apivault_encrypted) return;
-    injectBadge();
-  });
+  if (isContextValid()) {
+    chrome.storage.local.get('apivault_encrypted', ({ apivault_encrypted }) => {
+      if (!apivault_encrypted) return;
+      injectBadge();
+    });
+  }
 
   let overlayVisible = false;
 
@@ -206,7 +213,9 @@
       }
 
       const allKeys  = await decryptVault(vaultData.vault_key, vaultData.encrypted);
-      const matching = allKeys.filter(k => k.providerId === provider.id);
+      const matching = allKeys.filter(k =>
+        k.providerId && k.providerId.toLowerCase() === provider.id.toLowerCase()
+      );
 
       if (matching.length === 0) {
         body.innerHTML = `
@@ -284,10 +293,13 @@
 
   // ── Respond to background ping ────────────────────────────────────────────
 
-  chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-    if (msg.type === 'GET_HOST') {
-      sendResponse({ host: location.hostname, providerId: provider.id });
-    }
-  });
+  try {
+    chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+      if (!isContextValid()) return;
+      if (msg.type === 'GET_HOST') {
+        sendResponse({ host: location.hostname, providerId: provider.id });
+      }
+    });
+  } catch { /* extension context invalidated — ignore */ }
 
 })();
