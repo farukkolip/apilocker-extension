@@ -200,6 +200,9 @@
 
       <div id="auth-error" class="error hidden"></div>
       <button id="auth-submit-btn" class="btn-primary">Sign In</button>
+      <p id="forgot-pw-wrap" class="hint" style="text-align:center;">
+        <a href="#" id="forgot-pw-link" style="color:#6366f1;">Forgot password?</a>
+      </p>
       <p class="hint auth-note">Pro plan required for cloud sync. <br>Free tier: up to 5 keys.</p>
     </div>
   </div>
@@ -238,9 +241,44 @@
         ⚡ Upgrade to Pro
       </a>
       <button id="account-manage-btn" class="btn-secondary hidden">Manage Subscription</button>
+      <button id="account-change-master-btn" class="btn-secondary">Change Master Password</button>
       <button id="account-signout-btn" class="btn-danger hidden">Sign Out</button>
 
       <p class="hint" style="text-align:center;margin-top:4px;" id="account-local-note"></p>
+    </div>
+  </div>
+
+  <!-- ── CHANGE MASTER PASSWORD SCREEN ────────────────────────────── -->
+  <div id="screen-change-master" class="screen hidden">
+    <div class="topbar">
+      <button id="change-master-back-btn" class="icon-btn">←</button>
+      <span class="topbar-title">Change Master Password</span>
+      <div style="width:32px"></div>
+    </div>
+    <div class="form-body">
+      <div class="field">
+        <label>Current Master Password</label>
+        <div class="input-wrap">
+          <input type="password" id="change-master-current" placeholder="Current password" autocomplete="current-password">
+          <button class="eye-btn" data-target="change-master-current">👁</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>New Master Password</label>
+        <div class="input-wrap">
+          <input type="password" id="change-master-new" placeholder="Min. 8 characters" autocomplete="new-password">
+          <button class="eye-btn" data-target="change-master-new">👁</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Confirm New Password</label>
+        <div class="input-wrap">
+          <input type="password" id="change-master-confirm" placeholder="Repeat new password" autocomplete="new-password">
+          <button class="eye-btn" data-target="change-master-confirm">👁</button>
+        </div>
+      </div>
+      <div id="change-master-error" class="error hidden"></div>
+      <button id="change-master-btn" class="btn-primary">Update Master Password</button>
     </div>
   </div>
 

@@ -792,6 +792,22 @@ document.getElementById('auth-back-btn').addEventListener('click', () => {
 document.getElementById('tab-login').addEventListener('click',  () => updateAuthTab('login'));
 document.getElementById('tab-signup').addEventListener('click', () => updateAuthTab('signup'));
 
+// Show "Forgot password?" only on Sign In tab
+document.getElementById('forgot-pw-link').addEventListener('click', async e => {
+  e.preventDefault();
+  const email = document.getElementById('auth-email').value.trim();
+  if (!email) {
+    showError(document.getElementById('auth-error'), 'Enter your email first, then click Forgot password.');
+    return;
+  }
+  try {
+    await SupabaseAuth.resetPassword(email);
+    showToast('✅ Password reset email sent — check your inbox.');
+  } catch (err) {
+    showToast('❌ Could not send reset email: ' + err.message, true);
+  }
+});
+
 document.getElementById('auth-password').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('auth-submit-btn').click();
 });
@@ -807,8 +823,10 @@ function updateAuthTab(mode) {
   document.getElementById('tab-signup').classList.toggle('active', !isLogin);
   const btn = document.getElementById('auth-submit-btn');
   btn.textContent = isLogin ? 'Sign In' : 'Create Account';
-  btn.disabled = false;   // always reset on tab switch / screen open
+  btn.disabled = false;
   document.getElementById('auth-error').classList.add('hidden');
+  // "Forgot password?" only relevant on Sign In
+  document.getElementById('forgot-pw-wrap').style.display = isLogin ? '' : 'none';
 }
 
 document.getElementById('auth-submit-btn').addEventListener('click', async () => {
@@ -900,6 +918,49 @@ document.getElementById('account-back-btn').addEventListener('click', () => {
 });
 
 document.getElementById('account-signout-btn').addEventListener('click', doSignOut);
+
+document.getElementById('account-change-master-btn').addEventListener('click', () => {
+  document.getElementById('change-master-current').value = '';
+  document.getElementById('change-master-new').value     = '';
+  document.getElementById('change-master-confirm').value = '';
+  document.getElementById('change-master-error').classList.add('hidden');
+  document.getElementById('change-master-btn').disabled    = false;
+  document.getElementById('change-master-btn').textContent = 'Update Master Password';
+  show('screen-change-master');
+  document.getElementById('change-master-current').focus();
+});
+
+document.getElementById('change-master-back-btn').addEventListener('click', () => {
+  show('screen-account');
+});
+
+document.getElementById('change-master-btn').addEventListener('click', async () => {
+  const current = document.getElementById('change-master-current').value;
+  const newPw   = document.getElementById('change-master-new').value;
+  const confirm = document.getElementById('change-master-confirm').value;
+  const err     = document.getElementById('change-master-error');
+  const btn     = document.getElementById('change-master-btn');
+
+  if (!current)          { showError(err, 'Enter your current master password.'); return; }
+  if (newPw.length < 8)  { showError(err, 'New password must be at least 8 characters.'); return; }
+  if (newPw !== confirm)  { showError(err, 'New passwords do not match.'); return; }
+  err.classList.add('hidden');
+
+  btn.disabled = true; btn.textContent = 'Updating…';
+  try {
+    // Re-encrypt vault with new master password
+    sessionKey = await Vault.changeMasterPassword(current, newPw);
+    await persistSessionKey(sessionKey);
+    allKeys = await Vault.loadKeys(sessionKey);
+    // Upload new encrypted vault to cloud
+    autoUpload();
+    show('screen-account');
+    showToast('✅ Master password updated successfully.');
+  } catch (e) {
+    showError(err, e.message === 'WRONG_PASSWORD' ? 'Current password is incorrect.' : 'Error: ' + e.message);
+    btn.disabled = false; btn.textContent = 'Update Master Password';
+  }
+});
 
 document.getElementById('account-manage-btn').addEventListener('click', () => {
   chrome.tabs.create({ url: 'https://app.lemonsqueezy.com/my-orders' });

@@ -70,6 +70,14 @@ const SupabaseAuth = {
     }).catch(() => {}); // best-effort
   },
 
+  async resetPassword(email) {
+    await sbFetch('/auth/v1/recover', {
+      method: 'POST',
+      body: JSON.stringify({ email })
+    });
+    // Always resolves — Supabase doesn't reveal if email exists
+  },
+
   async refreshSession(refreshToken) {
     const data = await sbFetch('/auth/v1/token?grant_type=refresh_token', {
       method: 'POST',
