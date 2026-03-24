@@ -85,6 +85,7 @@
         <button id="sync-btn" class="icon-btn" title="Cloud sync">☁</button>
         <button id="export-btn" class="icon-btn" title="Export backup">⬇</button>
         <button id="import-btn" class="icon-btn" title="Import backup">⬆</button>
+        <button id="account-btn" class="icon-btn" title="Account">👤</button>
         <button id="lock-btn" class="icon-btn" title="Lock vault">🔒</button>
       </div>
       <input type="file" id="import-file" accept=".json" style="display:none">
@@ -147,9 +148,12 @@
         </div>
       </div>
 
-      <div class="field">
+      <div class="field" id="expiry-field">
         <label>Expiry Date <span class="hint-inline">(optional — get warned before it expires)</span></label>
         <input type="date" id="key-expiry">
+        <div id="expiry-pro-gate" class="pro-gate hidden">
+          🔒 Pro feature — <a href="https://apilocker.dev/#pricing" target="_blank">Upgrade to Pro</a>
+        </div>
       </div>
 
       <div class="field">
@@ -197,6 +201,46 @@
       <div id="auth-error" class="error hidden"></div>
       <button id="auth-submit-btn" class="btn-primary">Sign In</button>
       <p class="hint auth-note">Pro plan required for cloud sync. <br>Free tier: up to 5 keys.</p>
+    </div>
+  </div>
+
+  <!-- ── ACCOUNT SCREEN ──────────────────────────────────────────── -->
+  <div id="screen-account" class="screen hidden">
+    <div class="topbar">
+      <button id="account-back-btn" class="icon-btn">←</button>
+      <span class="topbar-title">Account</span>
+      <div style="width:32px"></div>
+    </div>
+    <div class="form-body">
+
+      <div class="account-hero">
+        <div class="account-avatar" id="account-avatar">👤</div>
+        <div class="account-email" id="account-email-display">—</div>
+        <div class="account-plan-badge" id="account-plan-badge">Free</div>
+      </div>
+
+      <div class="account-section">
+        <div class="account-row">
+          <span class="account-row-label">API Keys</span>
+          <span class="account-row-value" id="account-key-count">—</span>
+        </div>
+        <div class="account-row">
+          <span class="account-row-label">Cloud Sync</span>
+          <span class="account-row-value" id="account-sync-status">—</span>
+        </div>
+        <div class="account-row">
+          <span class="account-row-label">Last Synced</span>
+          <span class="account-row-value" id="account-last-synced">—</span>
+        </div>
+      </div>
+
+      <a id="account-upgrade-btn" class="btn-primary" href="https://apilocker.dev/#pricing" target="_blank" style="text-align:center;text-decoration:none;">
+        ⚡ Upgrade to Pro
+      </a>
+      <button id="account-manage-btn" class="btn-secondary hidden">Manage Subscription</button>
+      <button id="account-signout-btn" class="btn-danger hidden">Sign Out</button>
+
+      <p class="hint" style="text-align:center;margin-top:4px;" id="account-local-note"></p>
     </div>
   </div>
 

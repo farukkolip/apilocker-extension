@@ -51,8 +51,12 @@ const SyncState = {
   get isLoggedIn() { return !!this.accessToken; }
 };
 
-// Free tier: max 5 keys
+// Free tier limits
 const FREE_KEY_LIMIT = 5;
+
+function showProGate(feature) {
+  showToast(`🔒 ${feature} is a Pro feature. Upgrade at apilocker.dev`, true);
+}
 
 // Auth navigation tracking
 let authReturnScreen  = 'screen-welcome';
@@ -387,6 +391,7 @@ document.getElementById('search-input').addEventListener('input', e => {
 // ── Export ─────────────────────────────────────────────────────────────────
 
 document.getElementById('export-btn').addEventListener('click', () => {
+  if (!SyncState.isPro) { showProGate('Export'); return; }
   const exportData = {
     version: 1,
     exportedAt: new Date().toISOString(),
@@ -404,6 +409,7 @@ document.getElementById('export-btn').addEventListener('click', () => {
 // ── Import ─────────────────────────────────────────────────────────────────
 
 document.getElementById('import-btn').addEventListener('click', () => {
+  if (!SyncState.isPro) { showProGate('Import'); return; }
   document.getElementById('import-file').click();
 });
 
@@ -451,6 +457,9 @@ function openAddScreen() {
   document.getElementById('provider-custom').value    = '';
   document.getElementById('delete-btn').classList.add('hidden');
   document.getElementById('add-error').classList.add('hidden');
+  // Show/hide expiry based on plan
+  document.getElementById('key-expiry').style.display    = SyncState.isPro ? '' : 'none';
+  document.getElementById('expiry-pro-gate').classList.toggle('hidden', SyncState.isPro);
   buildProviderGrid();
   show('screen-add');
 }
@@ -465,6 +474,9 @@ function openEditScreen(entry) {
   document.getElementById('provider-custom').value    = PROVIDERS.find(p => p.id === entry.providerId) ? '' : (entry.providerId || '');
   document.getElementById('delete-btn').classList.remove('hidden');
   document.getElementById('add-error').classList.add('hidden');
+  // Show/hide expiry based on plan
+  document.getElementById('key-expiry').style.display    = SyncState.isPro ? '' : 'none';
+  document.getElementById('expiry-pro-gate').classList.toggle('hidden', SyncState.isPro);
   buildProviderGrid(entry.providerId);
   show('screen-add');
 }
@@ -503,6 +515,15 @@ document.getElementById('save-btn').addEventListener('click', async () => {
 
   if (!providerId) { showError(err, 'Please select a provider or enter a custom name.'); return; }
   if (!value)      { showError(err, 'API key value cannot be empty.'); return; }
+
+  // Pro gate: multiple keys per same provider
+  if (!editId && !SyncState.isPro) {
+    const sameProvider = allKeys.some(k => k.providerId === providerId);
+    if (sameProvider) {
+      showError(err, '🔒 Multiple keys per provider is a Pro feature. Upgrade at apilocker.dev');
+      return;
+    }
+  }
 
   err.classList.add('hidden');
   const btn = document.getElementById('save-btn');
@@ -865,6 +886,67 @@ function showUpgradePrompt() {
   const btn = document.getElementById('sync-btn');
   btn.classList.add('btn-highlight');
   setTimeout(() => btn.classList.remove('btn-highlight'), 2000);
+}
+
+// ── Account Screen ──────────────────────────────────────────────────────────
+
+document.getElementById('account-btn').addEventListener('click', () => {
+  openAccountScreen();
+  show('screen-account');
+});
+
+document.getElementById('account-back-btn').addEventListener('click', () => {
+  show('screen-main');
+});
+
+document.getElementById('account-signout-btn').addEventListener('click', doSignOut);
+
+document.getElementById('account-manage-btn').addEventListener('click', () => {
+  chrome.tabs.create({ url: 'https://app.lemonsqueezy.com/my-orders' });
+});
+
+function openAccountScreen() {
+  const emailEl     = document.getElementById('account-email-display');
+  const planBadge   = document.getElementById('account-plan-badge');
+  const upgradeBtn  = document.getElementById('account-upgrade-btn');
+  const manageBtn   = document.getElementById('account-manage-btn');
+  const signoutBtn  = document.getElementById('account-signout-btn');
+  const localNote   = document.getElementById('account-local-note');
+  const keyCount    = document.getElementById('account-key-count');
+  const syncStatus  = document.getElementById('account-sync-status');
+  const lastSynced  = document.getElementById('account-last-synced');
+
+  keyCount.textContent   = `${allKeys.length} key${allKeys.length !== 1 ? 's' : ''}`;
+
+  if (SyncState.isLoggedIn) {
+    emailEl.textContent    = SyncState.email || '—';
+    syncStatus.textContent = '✅ Active';
+    lastSynced.textContent = SyncState.lastSynced ? formatAgo(SyncState.lastSynced) : 'Never';
+    signoutBtn.classList.remove('hidden');
+    localNote.textContent  = '';
+
+    if (SyncState.isPro) {
+      planBadge.textContent = '⚡ Pro';
+      planBadge.classList.add('pro');
+      upgradeBtn.classList.add('hidden');
+      manageBtn.classList.remove('hidden');
+    } else {
+      planBadge.textContent = 'Free';
+      planBadge.classList.remove('pro');
+      upgradeBtn.classList.remove('hidden');
+      manageBtn.classList.add('hidden');
+    }
+  } else {
+    emailEl.textContent    = 'Local only';
+    syncStatus.textContent = '☁ Off';
+    lastSynced.textContent = '—';
+    planBadge.textContent  = 'Free';
+    planBadge.classList.remove('pro');
+    upgradeBtn.classList.remove('hidden');
+    manageBtn.classList.add('hidden');
+    signoutBtn.classList.add('hidden');
+    localNote.textContent  = 'Sign in to enable cloud sync';
+  }
 }
 
 // ── Boot ───────────────────────────────────────────────────────────────────
