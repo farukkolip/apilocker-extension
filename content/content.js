@@ -36,8 +36,7 @@
     return null;
   }
 
-  const provider = getProviderForHost(location.hostname);
-  if (!provider) return;
+  const builtinProvider = getProviderForHost(location.hostname);
 
   // ── Crypto helpers ────────────────────────────────────────────────────────
   // chrome.storage.session is NOT accessible from content scripts directly,
@@ -50,6 +49,42 @@
         else resolve(response);
       });
     });
+  }
+
+  // ── Resolve provider (built-in or custom) ─────────────────────────────────
+
+  async function resolveProvider() {
+    if (builtinProvider) return builtinProvider;
+
+    // Check storage for custom keys matching this hostname
+    const encrypted = await new Promise(r =>
+      chrome.storage.local.get('apivault_encrypted', d => r(d.apivault_encrypted))
+    );
+    if (!encrypted) return null;
+
+    // We can't decrypt here without the vault key, so ask background
+    const vaultData = await getVaultData();
+    if (vaultData.locked) return null;
+
+    const allKeys = await decryptVault(vaultData.vault_key, vaultData.encrypted);
+    const host = location.hostname;
+    const hostBase = host.replace(/^www\./, '').split('.')[0].toLowerCase();
+
+    const customKey = allKeys.find(k => {
+      if (PROVIDERS_INLINE.find(p => p.id === k.providerId)) return false;
+      const pid = (k.providerId || '').toLowerCase().replace(/\s+/g, '');
+      return host.includes(pid) || pid.includes(hostBase);
+    });
+
+    if (!customKey) return null;
+
+    return {
+      id: customKey.providerId,
+      name: customKey.providerId,
+      logo: `https://www.google.com/s2/favicons?domain=${host}&sz=64`,
+      domains: [host],
+      isCustom: true,
+    };
   }
 
   async function decryptVault(vaultKey, encrypted) {
@@ -78,10 +113,16 @@
 
   // ── Inject badge ──────────────────────────────────────────────────────────
 
+  let provider = builtinProvider; // will be resolved async below
+
   if (isContextValid()) {
-    chrome.storage.local.get('apivault_encrypted', ({ apivault_encrypted }) => {
-      if (!apivault_encrypted) return;
-      injectBadge();
+    resolveProvider().then(resolved => {
+      if (!resolved) return;
+      provider = resolved;
+      chrome.storage.local.get('apivault_encrypted', ({ apivault_encrypted }) => {
+        if (!apivault_encrypted) return;
+        injectBadge();
+      });
     });
   }
 
@@ -213,9 +254,18 @@
       }
 
       const allKeys  = await decryptVault(vaultData.vault_key, vaultData.encrypted);
-      const matching = allKeys.filter(k =>
-        k.providerId && k.providerId.toLowerCase() === provider.id.toLowerCase()
-      );
+      const matching = allKeys.filter(k => {
+        if (!k.providerId) return false;
+        if (k.providerId.toLowerCase() === provider.id.toLowerCase()) return true;
+        // For custom providers, also match by hostname
+        if (provider.isCustom) {
+          const host = location.hostname;
+          const hostBase = host.replace(/^www\./, '').split('.')[0].toLowerCase();
+          const pid = k.providerId.toLowerCase().replace(/\s+/g, '');
+          return host.includes(pid) || pid.includes(hostBase);
+        }
+        return false;
+      });
 
       if (matching.length === 0) {
         body.innerHTML = `

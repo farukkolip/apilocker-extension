@@ -360,16 +360,35 @@ async function checkActiveSite() {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab?.url) return;
-    const host     = new URL(tab.url).hostname;
+    const host = new URL(tab.url).hostname;
+
+    // 1. Check built-in providers first
     const provider = getProviderForHost(host);
-    if (!provider) { banner.classList.add('hidden'); return; }
+    if (provider) {
+      const matchingKeys = allKeys.filter(k => k.providerId === provider.id);
+      if (matchingKeys.length === 0) { banner.classList.add('hidden'); return; }
+      document.getElementById('site-banner-logo').src = provider.logo;
+      document.getElementById('site-banner-logo').style.display = '';
+      document.getElementById('site-banner-text').textContent =
+        `You're on ${provider.name} — ${matchingKeys.length} key${matchingKeys.length > 1 ? 's' : ''} saved`;
+      banner.classList.remove('hidden');
+      return;
+    }
 
-    const matchingKeys = allKeys.filter(k => k.providerId === provider.id);
-    if (matchingKeys.length === 0) { banner.classList.add('hidden'); return; }
+    // 2. Check custom providers — match providerId against hostname
+    const hostBase = host.replace(/^www\./, '').split('.')[0].toLowerCase();
+    const customKeys = allKeys.filter(k => {
+      if (PROVIDERS.find(p => p.id === k.providerId)) return false; // skip built-ins
+      const pid = (k.providerId || '').toLowerCase().replace(/\s+/g, '');
+      return host.includes(pid) || pid.includes(hostBase);
+    });
 
-    document.getElementById('site-banner-logo').src = provider.logo;
+    if (customKeys.length === 0) { banner.classList.add('hidden'); return; }
+
+    const customName = customKeys[0].providerId;
+    document.getElementById('site-banner-logo').style.display = 'none';
     document.getElementById('site-banner-text').textContent =
-      `You're on ${provider.name} — ${matchingKeys.length} key${matchingKeys.length > 1 ? 's' : ''} saved`;
+      `You're on ${customName} — ${customKeys.length} key${customKeys.length > 1 ? 's' : ''} saved`;
     banner.classList.remove('hidden');
   } catch { /* tab access denied */ }
 }
@@ -496,6 +515,15 @@ function buildProviderGrid(selectedId = null) {
       document.getElementById('provider-custom').value = '';
     });
     grid.appendChild(chip);
+  });
+
+  // When user types in custom field, deselect all chips and clear selectedProvider
+  const customInput = document.getElementById('provider-custom');
+  customInput.addEventListener('input', () => {
+    if (customInput.value.trim()) {
+      selectedProvider = null;
+      document.querySelectorAll('.provider-chip').forEach(c => c.classList.remove('selected'));
+    }
   });
 }
 
