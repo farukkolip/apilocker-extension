@@ -474,8 +474,11 @@ function openAddScreen() {
   document.getElementById('key-notes').value          = '';
   document.getElementById('key-expiry').value         = '';
   document.getElementById('provider-custom').value    = '';
-  document.getElementById('delete-btn').classList.add('hidden');
+  hideDeleteConfirm();
+  _deleteBtn.classList.add('hidden');
   document.getElementById('add-error').classList.add('hidden');
+  const btn = document.getElementById('save-btn');
+  btn.disabled = false; btn.textContent = 'Save Key';
   // Show/hide expiry based on plan
   document.getElementById('key-expiry').style.display    = SyncState.isPro ? '' : 'none';
   document.getElementById('expiry-pro-gate').classList.toggle('hidden', SyncState.isPro);
@@ -491,8 +494,11 @@ function openEditScreen(entry) {
   document.getElementById('key-notes').value          = entry.notes  || '';
   document.getElementById('key-expiry').value         = entry.expiry || '';
   document.getElementById('provider-custom').value    = PROVIDERS.find(p => p.id === entry.providerId) ? '' : (entry.providerId || '');
-  document.getElementById('delete-btn').classList.remove('hidden');
+  hideDeleteConfirm();
+  _deleteBtn.classList.remove('hidden');
   document.getElementById('add-error').classList.add('hidden');
+  const btn = document.getElementById('save-btn');
+  btn.disabled = false; btn.textContent = 'Save Key';
   // Show/hide expiry based on plan
   document.getElementById('key-expiry').style.display    = SyncState.isPro ? '' : 'none';
   document.getElementById('expiry-pro-gate').classList.toggle('hidden', SyncState.isPro);
@@ -519,7 +525,9 @@ function buildProviderGrid(selectedId = null) {
 
   // When user types in custom field, deselect all chips and clear selectedProvider
   const customInput = document.getElementById('provider-custom');
+  const savedValue = customInput.value;
   const newInput = customInput.cloneNode(true);
+  newInput.value = savedValue;
   customInput.parentNode.replaceChild(newInput, customInput);
   newInput.addEventListener('input', () => {
     if (newInput.value.trim()) {
@@ -578,13 +586,51 @@ document.getElementById('save-btn').addEventListener('click', async () => {
   }
 });
 
-document.getElementById('delete-btn').addEventListener('click', async () => {
-  if (!editId) return;
-  if (!confirm('Delete this API key? This cannot be undone.')) return;
-  allKeys = await Vault.deleteKey(sessionKey, allKeys, editId);
-  await renderMain();
-  autoUpload();
-});
+// ── Delete confirm (static HTML, toggled by class) ────────────────────────
+const _deleteBtn     = document.getElementById('delete-btn');
+const _deleteConfirm = document.getElementById('delete-confirm');
+const _confirmYes    = document.getElementById('delete-confirm-yes');
+const _confirmNo     = document.getElementById('delete-confirm-no');
+
+function showDeleteConfirm() {
+  if (!_deleteConfirm || !_confirmYes) return;
+  _deleteBtn.classList.add('hidden');
+  _confirmYes.disabled = false; _confirmYes.textContent = 'Yes, Delete';
+  _deleteConfirm.classList.remove('hidden');
+}
+function hideDeleteConfirm() {
+  if (_deleteConfirm) _deleteConfirm.classList.add('hidden');
+  if (_deleteBtn) _deleteBtn.classList.remove('hidden');
+}
+
+if (_deleteBtn) {
+  _deleteBtn.addEventListener('click', () => {
+    if (!editId) return;
+    showDeleteConfirm();
+  });
+}
+
+if (_confirmNo) {
+  _confirmNo.addEventListener('click', () => {
+    hideDeleteConfirm();
+  });
+}
+
+if (_confirmYes) {
+  _confirmYes.addEventListener('click', async () => {
+    if (!editId) return;
+    _confirmYes.disabled = true; _confirmYes.textContent = 'Deleting…';
+    try {
+      allKeys = await Vault.deleteKey(sessionKey, allKeys, editId);
+      if (_deleteConfirm) _deleteConfirm.classList.add('hidden');
+      await renderMain();
+      autoUpload();
+    } catch (err) {
+      showToast('❌ Delete failed: ' + err.message, true);
+      hideDeleteConfirm();
+    }
+  });
+}
 
 // ── Auto Upload ────────────────────────────────────────────────────────────
 
@@ -613,7 +659,8 @@ function showToast(msg, isError = false) {
   toast.textContent = msg;
   toast.className   = 'toast' + (isError ? ' toast-error' : '');
   toast.style.opacity = '1';
-  setTimeout(() => { toast.style.opacity = '0'; }, 2500);
+  toast.style.pointerEvents = 'auto';
+  setTimeout(() => { toast.style.opacity = '0'; toast.style.pointerEvents = 'none'; }, 2500);
 }
 
 // ── Utilities ──────────────────────────────────────────────────────────────

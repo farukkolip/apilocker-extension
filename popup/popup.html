@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>API Locker</title>
+<title>API Locker</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
@@ -163,6 +163,13 @@
 
       <div id="add-error" class="error hidden"></div>
       <button id="save-btn" class="btn-primary">Save Key</button>
+      <div id="delete-confirm" class="hidden" style="background:#1a1a1a;border:1px solid #ef444440;border-radius:8px;padding:12px;text-align:center;">
+        <div style="color:#f87171;font-size:13px;margin-bottom:10px;">Delete this key? This cannot be undone.</div>
+        <div style="display:flex;gap:8px;">
+          <button id="delete-confirm-yes" style="flex:1;background:#ef4444;border:none;color:#fff;font-size:12px;font-weight:600;padding:7px;border-radius:6px;cursor:pointer;">Yes, Delete</button>
+          <button id="delete-confirm-no" style="flex:1;background:#2a2a2a;border:1px solid #444;color:#aaa;font-size:12px;font-weight:600;padding:7px;border-radius:6px;cursor:pointer;">Cancel</button>
+        </div>
+      </div>
       <button id="delete-btn" class="btn-danger hidden">Delete Key</button>
     </div>
   </div>
