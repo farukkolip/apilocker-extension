@@ -519,8 +519,10 @@ function buildProviderGrid(selectedId = null) {
 
   // When user types in custom field, deselect all chips and clear selectedProvider
   const customInput = document.getElementById('provider-custom');
-  customInput.addEventListener('input', () => {
-    if (customInput.value.trim()) {
+  const newInput = customInput.cloneNode(true);
+  customInput.parentNode.replaceChild(newInput, customInput);
+  newInput.addEventListener('input', () => {
+    if (newInput.value.trim()) {
       selectedProvider = null;
       document.querySelectorAll('.provider-chip').forEach(c => c.classList.remove('selected'));
     }
